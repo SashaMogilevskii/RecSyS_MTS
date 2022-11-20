@@ -20,6 +20,9 @@ router = APIRouter()
     tags=["Health"],
 )
 async def health() -> str:
+    """
+    Test, which checks the viability of the function
+    """
     return "I am alive"
 
 
@@ -33,20 +36,27 @@ async def get_reco(
     model_name: str,
     user_id: int,
 ) -> RecoResponse:
+    """
+    Get recommendations for  a user
+    :param request:
+    :param model_name: srt - type of choose model
+    :param user_id: int - number user for recommendations
+    :return: RecoResponse int, List[int]
+    """
+
+
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
-    if model_name == 'model_name_test':
-        pass
+    if user_id > 10 ** 9:
+        raise UserNotFoundError(error_message=f"User {user_id} not found")
+
+    if model_name == 'random_model':
+        k_recs = request.app.state.k_recs
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
-    if user_id > 10**9:
-        raise UserNotFoundError(error_message=f"User {user_id} not found")
-
-    k_recs = request.app.state.k_recs
     reco = list(range(k_recs))
     return RecoResponse(user_id=user_id, items=reco)
-
 
 def add_views(app: FastAPI) -> None:
     app.include_router(router)
