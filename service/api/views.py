@@ -25,10 +25,10 @@ token_bearer = HTTPBearer(auto_error=False)
 
 
 async def get_api_key(
-    api_key_from_query: str = Security(api_key_query),
-    api_key_from_header: str = Security(api_key_header),
-    token: HTTPAuthorizationCredentials = Security(token_bearer),
-    ) -> str:
+        api_key_from_query: str = Security(api_key_query),
+        api_key_from_header: str = Security(api_key_header),
+        token: HTTPAuthorizationCredentials = Security(token_bearer)
+) -> str:
     if api_key_from_query == API_KEY:
         return api_key_from_query
     if api_key_from_header == API_KEY:
@@ -36,9 +36,6 @@ async def get_api_key(
     if token is not None and token.credentials == API_KEY:
         return token.credentials
     raise NotAuthorizedError()
-
-
-
 
 
 class RecoResponse(BaseModel):
@@ -80,8 +77,6 @@ async def get_reco(
     :param user_id: int - number user for recommendations
     :return: RecoResponse int, List[int]
     """
-
-
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
     if user_id > 10 ** 9:
@@ -94,6 +89,7 @@ async def get_reco(
 
     reco = list(range(k_recs))
     return RecoResponse(user_id=user_id, items=reco)
+
 
 def add_views(app: FastAPI) -> None:
     app.include_router(router)
