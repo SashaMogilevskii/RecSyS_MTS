@@ -1,0 +1,13 @@
+schema: '2.0'
+stages:
+  load_data:
+    cmd: python service/data/data_load.py data/raw/
+    deps:
+    - path: service/data/data_load.py
+      md5: 88ecc10cc2d82a2516f03e44038a2e33
+      size: 1106
+    outs:
+    - path: data/raw/kion_train
+      md5: 5ed0b9ca120626863d2faf12a783c16b.dir
+      size: 241814208
+      nfiles: 3
