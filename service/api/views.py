@@ -90,6 +90,9 @@ async def get_reco(
     reco = list(range(k_recs))
     return RecoResponse(user_id=user_id, items=reco)
 
+    ## Добавить 2 модели
+    # Построить классы этих моделей посчитать их веса и всю поеботу.
+
 
 def add_views(app: FastAPI) -> None:
     app.include_router(router)
