@@ -11,16 +11,16 @@ stages:
 #    cmd: python service/data/prepare_datasets.py data/raw/
 #    deps:
 #      - data/raw/
-#      - service/data/prepare_datasets.py 
+#      - service/data/prepare_datasets.py
 #    outs:
 #      - data/processed/train.csv
 #      - data/processed/test.csv
 
 #  train:
-#    cmd: python src/models/train.py  data/processed/train.csv data/processed/test.csv models/model.clf
+#    cmd: python src/modelss/train.py  data/processed/train.csv data/processed/test.csv modelss/model.clf
 #    deps:
 #      - data/processed/train.csv
 #      - data/processed/test.csv
-#      - src/models/train.py
+#      - src/modelss/train.py
 #    outs:
-#      - models/model.clf
+#      - modelss/model.clf

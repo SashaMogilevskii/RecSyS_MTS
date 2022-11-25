@@ -13,6 +13,8 @@ from service.api.exceptions import (
     UserNotFoundError,
 )
 from service.log import app_logger
+from ..modelss.allmodels import  Random2Recommend
+
 
 load_dotenv()
 
@@ -23,7 +25,8 @@ api_key_query = APIKeyQuery(name='API_KEY', auto_error=False)
 api_key_header = APIKeyHeader(name='API_KEY', auto_error=False)
 token_bearer = HTTPBearer(auto_error=False)
 
-
+list_models = ['random_model', 'random2_model']
+random2_model = Random2Recommend()
 async def get_api_key(
         api_key_from_query: str = Security(api_key_query),
         api_key_from_header: str = Security(api_key_header),
@@ -82,12 +85,18 @@ async def get_reco(
     if user_id > 10 ** 9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
-    if model_name == 'random_model':
+    # Проверяем есть ли такая модель в нашем списке
+    if model_name in list_models:
         k_recs = request.app.state.k_recs
+        if model_name == 'random_model': #Модель из 1ого дз (range(10))
+            reco = list(range(k_recs))
+        elif model_name == 'random2_model': #Тестим подгрузку моделей из класса
+            reco = random2_model.predict(user_id=user_id, k=k_recs)
+
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
-    reco = list(range(k_recs))
+
     return RecoResponse(user_id=user_id, items=reco)
 
     ## Добавить 2 модели
