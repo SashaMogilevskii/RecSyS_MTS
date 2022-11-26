@@ -11,3 +11,51 @@ stages:
       md5: 5ed0b9ca120626863d2faf12a783c16b.dir
       size: 241814208
       nfiles: 3
+  prepare_dataset:
+    cmd: python service/data/prepare_dataset.py  data/raw/  data/processed/train.csv
+      data/processed/test.csv  W  1
+    deps:
+    - path: data/raw/
+      md5: 922fd0d3923ef2a7783571b32478ff4d.dir
+      size: 320611116
+      nfiles: 8
+    - path: service/data/prepare_dataset.py
+      md5: cc461ffae89ead232910ec2966986799
+      size: 2350
+    outs:
+    - path: data/processed/test.csv
+      md5: 3beab9a2fbd039d7119e911480c54d2b
+      size: 3664030
+    - path: data/processed/train.csv
+      md5: 1490f3204a7c50880a066e8043d87df9
+      size: 173981427
+  train:
+    cmd: python service/data/train.py  data/processed/train.csv models/model.clf
+    deps:
+    - path: data/processed/test.csv
+      md5: 3beab9a2fbd039d7119e911480c54d2b
+      size: 3664030
+    - path: data/processed/train.csv
+      md5: 1490f3204a7c50880a066e8043d87df9
+      size: 173981427
+    - path: service/data/train.py
+      md5: 2d3de26cfdf3f0adbdd63927687fa56b
+      size: 874
+    outs:
+    - path: models/model.clf
+      md5: 389f5fa28b49f8b64c54296fffd132d1
+      size: 338411209
+  evaluate:
+    cmd: python service/data/evaluate.py  data/processed/train.csv data/processed/test.csv
+      models/model.clf  reports/scores.json
+    deps:
+    - path: models/model.clf
+      md5: 389f5fa28b49f8b64c54296fffd132d1
+      size: 338411209
+    - path: service/data/evaluate.py
+      md5: cb6fa6ee94be8a1f772dca6ac8b43749
+      size: 1311
+    outs:
+    - path: reports/scores.json
+      md5: 8f7d2c534372a81f72ad7f30903d270a
+      size: 136

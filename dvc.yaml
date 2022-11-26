@@ -7,20 +7,28 @@ stages:
     outs:
       - data/raw/kion_train
 
-#  prepare_dataset:
-#    cmd: python service/data/prepare_datasets.py data/raw/
-#    deps:
-#      - data/raw/
-#      - service/data/prepare_datasets.py
-#    outs:
-#      - data/processed/train.csv
-#      - data/processed/test.csv
+  prepare_dataset:
+    cmd: python service/data/prepare_dataset.py  data/raw/  data/processed/train.csv data/processed/test.csv  W  1
+    deps:
+      - data/raw/
+      - service/data/prepare_dataset.py
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
 
-#  train:
-#    cmd: python src/modelss/train.py  data/processed/train.csv data/processed/test.csv modelss/model.clf
-#    deps:
-#      - data/processed/train.csv
-#      - data/processed/test.csv
-#      - src/modelss/train.py
-#    outs:
-#      - modelss/model.clf
+  train:
+    cmd: python service/data/train.py  data/processed/train.csv models/model.clf
+    deps:
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - service/data/train.py
+    outs:
+      - models/model.clf
+
+  evaluate:
+    cmd: python service/data/evaluate.py  data/processed/train.csv data/processed/test.csv models/model.clf  reports/scores.json
+    deps:
+      - models/model.clf
+      - service/data/evaluate.py
+    metrics:
+      - reports/scores.json
