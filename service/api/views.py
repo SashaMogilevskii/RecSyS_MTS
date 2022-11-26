@@ -19,6 +19,9 @@ from ..modelss.allmodels import  (
     StupidTop,
     NoStupidTop
     )
+import sys
+sys.path.insert(1, 'service/modelss/')
+from userknn import UserKnn
 
 
 load_dotenv()
@@ -39,6 +42,7 @@ list_models = ['random_model',
 random2_model = Random2Recommend()
 stupid_top = StupidTop()
 no_stupid_top = NoStupidTop()
+base_userknn = jb.load('models/model.clf')
 async def get_api_key(
         api_key_from_query: str = Security(api_key_query),
         api_key_from_header: str = Security(api_key_header),
@@ -109,9 +113,14 @@ async def get_reco(
         elif model_name == 'no_stupid_top':  # NoStupid топ из hw3.1
             reco = no_stupid_top.predict(user_id=user_id, k=k_recs)
         elif model_name == 'base_userknn':  # UserKNN from lecture
-            model = jb.load('models/model.clf')
-            predicted = model.predict(test=user_id, N_recs=k_recs)
-            reco = list(predicted['item_id'].values)
+            predicted = base_userknn.predict(test=user_id, N_recs=k_recs)
+            if len(predicted) == 0:
+                reco = no_stupid_top.predict(user_id=user_id, k=k_recs)
+            else:
+                reco = list(predicted['item_id'].values)
+                if len(reco) < k_recs:
+                    reco += no_stupid_top.predict(user_id=user_id,
+                                                  k=k_recs-len(reco))
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
