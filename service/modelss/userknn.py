@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy as sp
-from typing import Dict
+from typing import Dict, Union
 from collections import Counter
 import implicit
 from implicit.nearest_neighbours import ItemItemRecommender
@@ -76,11 +76,14 @@ class UserKnn():
             return [user_inv_mapping[user] for user, _ in recs], [sim for _, sim in recs]
         return _recs_mapper
     
-    def predict(self, test: pd.DataFrame, N_recs: int = 10):
+    def predict(self, test: Union[pd.DataFrame, int], N_recs: int = 10):
         
         if not self.is_fitted:
             raise ValueError("Please call fit before predict")
         
+        if type(test) == int:
+            test = pd.DataFrame({'user_id': [test]})
+            
         mapper = self._generate_recs_mapper(
             model=self.user_knn, 
             user_mapping=self.users_mapping,

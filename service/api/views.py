@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, FastAPI, Request, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.security.api_key import APIKey, APIKeyHeader, APIKeyQuery
 from pydantic import BaseModel
+import joblib as jb
 
 from service.api.exceptions import (
     ModelNotFoundError,
@@ -32,7 +33,8 @@ token_bearer = HTTPBearer(auto_error=False)
 list_models = ['random_model',
                'random2_model',
                'stupid_top',
-               'no_stupid_top']
+               'no_stupid_top',
+               'base_userknn',]
 
 random2_model = Random2Recommend()
 stupid_top = StupidTop()
@@ -106,6 +108,10 @@ async def get_reco(
             reco = stupid_top.predict(user_id=user_id, k=k_recs)
         elif model_name == 'no_stupid_top':  # NoStupid топ из hw3.1
             reco = no_stupid_top.predict(user_id=user_id, k=k_recs)
+        elif model_name == 'base_userknn':  # UserKNN from lecture
+            model = jb.load('models/model.clf')
+            predicted = model.predict(test=user_id, N_recs=k_recs)
+            reco = list(predicted['item_id'].values)
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
