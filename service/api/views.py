@@ -13,7 +13,11 @@ from service.api.exceptions import (
     UserNotFoundError,
 )
 from service.log import app_logger
-from ..modelss.allmodels import  Random2Recommend
+from ..modelss.allmodels import  (
+    Random2Recommend,
+    StupidTop,
+    NoStupidTop
+    )
 
 
 load_dotenv()
@@ -25,8 +29,14 @@ api_key_query = APIKeyQuery(name='API_KEY', auto_error=False)
 api_key_header = APIKeyHeader(name='API_KEY', auto_error=False)
 token_bearer = HTTPBearer(auto_error=False)
 
-list_models = ['random_model', 'random2_model']
+list_models = ['random_model',
+               'random2_model',
+               'stupid_top',
+               'no_stupid_top']
+
 random2_model = Random2Recommend()
+stupid_top = StupidTop()
+no_stupid_top = NoStupidTop()
 async def get_api_key(
         api_key_from_query: str = Security(api_key_query),
         api_key_from_header: str = Security(api_key_header),
@@ -92,7 +102,10 @@ async def get_reco(
             reco = list(range(k_recs))
         elif model_name == 'random2_model': #Тестим подгрузку моделей из класса
             reco = random2_model.predict(user_id=user_id, k=k_recs)
-
+        elif model_name == 'stupid_top': # Простой топ из hw3.1
+            reco = stupid_top.predict(user_id=user_id, k=k_recs)
+        elif model_name == 'no_stupid_top':  # NoStupid топ из hw3.1
+            reco = no_stupid_top.predict(user_id=user_id, k=k_recs)
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
@@ -100,7 +113,7 @@ async def get_reco(
     return RecoResponse(user_id=user_id, items=reco)
 
     ## Добавить 2 модели
-    # Построить классы этих моделей посчитать их веса и всю поеботу.
+    # Построить классы этих моделей посчитать их веса и все значения.
 
 
 def add_views(app: FastAPI) -> None:
