@@ -21,8 +21,7 @@ from ..modelss.allmodels import  (
     )
 import sys
 sys.path.insert(1, 'service/modelss/')
-from userknn import UserKnn
-
+# from userknn import UserKnn
 
 load_dotenv()
 
@@ -33,16 +32,18 @@ api_key_query = APIKeyQuery(name='API_KEY', auto_error=False)
 api_key_header = APIKeyHeader(name='API_KEY', auto_error=False)
 token_bearer = HTTPBearer(auto_error=False)
 
-list_models = ['random_model',
-               'random2_model',
-               'stupid_top',
-               'no_stupid_top',
-               'base_userknn',]
-
 random2_model = Random2Recommend()
 stupid_top = StupidTop()
 no_stupid_top = NoStupidTop()
 base_userknn = jb.load('models/model.clf')
+
+models = {'random_model': None,
+            'random2_model': random2_model,
+            'stupid_top': stupid_top,
+            'no_stupid_top': no_stupid_top,
+            'base_userknn': base_userknn,
+}
+
 async def get_api_key(
         api_key_from_query: str = Security(api_key_query),
         api_key_from_header: str = Security(api_key_header),
@@ -102,7 +103,7 @@ async def get_reco(
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
     # Проверяем есть ли такая модель в нашем списке
-    if model_name in list_models:
+    if model_name in models:
         k_recs = request.app.state.k_recs
         if model_name == 'random_model': #Модель из 1ого дз (range(10))
             reco = list(range(k_recs))
