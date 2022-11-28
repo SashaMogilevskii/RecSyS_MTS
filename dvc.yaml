@@ -8,7 +8,7 @@ stages:
       - data/raw/kion_train
 
   prepare_dataset:
-    cmd: python service/data/prepare_dataset.py  data/raw/  data/processed/train.csv data/processed/test.csv  W  1
+    cmd: python service/data/prepare_dataset.py  data/raw/  data/processed/train.csv data/processed/test.csv  D  5
     deps:
       - data/raw/
       - service/data/prepare_dataset.py
@@ -17,7 +17,7 @@ stages:
       - data/processed/test.csv
 
   train:
-    cmd: python service/data/train.py  data/processed/train.csv models/model.clf
+    cmd: python service/data/train.py  data/processed/train.csv models/model.clf 20
     deps:
       - data/processed/train.csv
       - data/processed/test.csv
