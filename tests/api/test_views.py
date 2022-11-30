@@ -50,3 +50,16 @@ def test_get_reco_for_unknown_model(
         response = client.get(path)
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json()["errors"][0]["error_key"] == "model_not_found"
+
+
+def test_get_reco_with_wrong_cred(
+    client: TestClient,
+) -> None:
+    user_id = 123
+    model_name = 'model_1'
+    path = GET_RECO_PATH.format(model_name=model_name, user_id=user_id)
+    wrong_header = {"API_KEY": "12312331231"}
+    with client:
+        response = client.get(path, headers=wrong_header)
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json()["errors"][0]["error_key"] == "wrong_credentials"
