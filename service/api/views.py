@@ -17,7 +17,9 @@ from service.log import app_logger
 from ..modelss.allmodels import  (
     Random2Recommend,
     StupidTop,
-    NoStupidTop
+    NoStupidTop,
+    Knn_20,
+    Knn_20_All
     )
 import sys
 sys.path.insert(1, 'service/modelss/')
@@ -36,12 +38,16 @@ random2_model = Random2Recommend()
 stupid_top = StupidTop()
 no_stupid_top = NoStupidTop()
 base_userknn = jb.load('models/model.clf')
+knn_20 = Knn_20()
+knn_20top = Knn_20_All()
 
 models = {'random_model': None,
             'random2_model': random2_model,
             'stupid_top': stupid_top,
             'no_stupid_top': no_stupid_top,
             'base_userknn': base_userknn,
+            'knn_20': knn_20,
+            'knn_20top': knn_20top
 }
 
 async def get_api_key(
@@ -122,14 +128,18 @@ async def get_reco(
                 if len(reco) < k_recs:
                     reco += no_stupid_top.predict(user_id=user_id,
                                                   k=k_recs-len(reco))
+        elif model_name == 'knn_20':  # UserKNN from top_20
+            reco = knn_20.predict(user_id=user_id, k=k_recs)
+
+        elif model_name == 'knn_20top':  # UserKNN from top_20
+            reco = knn_20top.predict(user_id=user_id, k=k_recs)
+
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
 
     return RecoResponse(user_id=user_id, items=reco)
 
-    ## Добавить 2 модели
-    # Построить классы этих моделей посчитать их веса и все значения.
 
 
 def add_views(app: FastAPI) -> None:
