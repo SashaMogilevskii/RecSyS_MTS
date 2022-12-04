@@ -1,9 +1,9 @@
-import pandas as pd
-import numpy as np
-import joblib as jb
-
 from abc import ABC
 from typing import List
+
+import nmslib
+import pandas as pd
+import numpy as np
 
 
 class BaseModel(ABC):
@@ -106,50 +106,38 @@ class NoStupidTop(BaseModel):
         return reco
 
 
-class Knn_20(BaseModel):
-    def __init__(self):
-        super(BaseModel).__init__()
-
-        self.model = jb.load('models/model_20.clf')
-        self.reco = [9728, 13865, 15297, 10440, 3734,
-                     4151, 142, 8636, 7571, 4495]
-
-    def predict(self, user_id: int, k: int) -> List[int]:
-        predicted = self.model.predict(test=user_id, N_recs=k)
-        if len(predicted) == 0:
-            reco = self.no_stupid_model.predict(user_id=user_id, k=k)
-        else:
-            reco = list(predicted['item_id'].values)
-            if len(reco) < k:
-                reco += self.no_stupid_modelp.predict(user_id=user_id,
-                                                      k=k - len(reco))
-
-        return reco
-
-class Knn_20_All(BaseModel):
-    def __init__(self):
-        super(BaseModel).__init__()
-
-        self.model = jb.load('models/model_20_all.clf')
-        self.no_stupid_model = NoStupidTop()
-        self.reco_unique = []
-
-    def predict(self, user_id: int, k: int) -> List[int]:
-        predicted = self.model.predict(test=user_id, N_recs=k)
-        if len(predicted) == 0:
-            self.reco_unique = self.no_stupid_model.predict(user_id=user_id, k=k)
-        else:
-            reco = list(predicted['item_id'].values)
-            if len(reco) < k:
-                reco += self.no_stupid_model.predict(user_id=user_id,
-                                              k=k + 15)
-            for el in reco:
-                if el not in self.reco_unique:
-                    self.reco_unique.append(el)
-
-                if len(self.reco_unique) == 10:
-                    break
-
-
-
-        return self.reco_unique
+class ApproximateNearestNeighbors(BaseModel):
+    def __init__(self, user_embeddings, item_embeddings, M, num_threads, efC, efS):
+        self.user_embeddings = user_embeddings
+        self.item_embeddings = item_embeddings
+        self.M = M
+        self.num_threads = num_threads
+        self.efC = efC
+        seld.efS = efS
+    
+    def augment_inner_product(self, factors):
+        normed_factors = np.linalg.norm(factors, axis=1)
+        max_norm = normed_factors.max()
+        
+        extra_dim = np.sqrt(max_norm ** 2 - normed_factors ** 2).reshape(-1, 1)
+        augmented_factors = np.append(factors, extra_dim, axis=1)
+        return max_norm, augmented_factors
+    
+    def predict(self, user_id: int, k_reco: int):
+        max_norm, augmented_item_embeddings = self.augment_inner_product(self.item_embeddings)
+        extra_zero = np.zeros((user_embeddings.shape[0], 1))
+        augmented_user_embeddings = np.append(self.user_embeddings, extra_zero, axis=1)
+        
+        space_name='negdotprod'
+        index = nmslib.init(method='hnsw', space=space_name, data_type=nmslib.DataType.DENSE_VECTOR)
+        
+        index_time_params = {'M': self.M, 'indexThreadQty': self.num_threads, 'efConstruction': self.efC}
+        index.createIndex(index_time_params) 
+        
+        query_time_params = {'efSearch': self.efS}
+        index.setQueryTimeParams(query_time_params)
+        
+        query_qty = augmented_user_embeddings.shape[0]
+        nbrs = index.knnQueryBatch(query_matrix, k = k_reco, num_threads = self.num_threads)
+        
+        return nbrs[user_id][0]
