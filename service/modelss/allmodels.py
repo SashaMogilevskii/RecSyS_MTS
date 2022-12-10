@@ -107,13 +107,14 @@ class NoStupidTop(BaseModel):
 
 
 class ApproximateNearestNeighbors(BaseModel):
-    def __init__(self, user_embeddings, item_embeddings, M, num_threads, efC, efS):
-        self.user_embeddings = user_embeddings
-        self.item_embeddings = item_embeddings
+    def __init__(self, model, dataset, M, num_threads, efC, efS):
+        self.model = model
+        self.dataset = dataset
         self.M = M
         self.num_threads = num_threads
         self.efC = efC
-        seld.efS = efS
+        self.efS = efS
+        self.recos = []
     
     def augment_inner_product(self, factors):
         normed_factors = np.linalg.norm(factors, axis=1)
@@ -122,14 +123,16 @@ class ApproximateNearestNeighbors(BaseModel):
         extra_dim = np.sqrt(max_norm ** 2 - normed_factors ** 2).reshape(-1, 1)
         augmented_factors = np.append(factors, extra_dim, axis=1)
         return max_norm, augmented_factors
-    
-    def predict(self, user_id: int, k_reco: int):
-        max_norm, augmented_item_embeddings = self.augment_inner_product(self.item_embeddings)
+       
+    def fit(self, k_reco: int):
+        user_embeddings, item_embeddings = self.model.get_vectors(self.dataset)
+        max_norm, augmented_item_embeddings = self.augment_inner_product(item_embeddings)
         extra_zero = np.zeros((user_embeddings.shape[0], 1))
-        augmented_user_embeddings = np.append(self.user_embeddings, extra_zero, axis=1)
+        augmented_user_embeddings = np.append(user_embeddings, extra_zero, axis=1)
         
         space_name='negdotprod'
         index = nmslib.init(method='hnsw', space=space_name, data_type=nmslib.DataType.DENSE_VECTOR)
+        index.addDataPointBatch(augmented_item_embeddings) 
         
         index_time_params = {'M': self.M, 'indexThreadQty': self.num_threads, 'efConstruction': self.efC}
         index.createIndex(index_time_params) 
@@ -138,6 +141,9 @@ class ApproximateNearestNeighbors(BaseModel):
         index.setQueryTimeParams(query_time_params)
         
         query_qty = augmented_user_embeddings.shape[0]
-        nbrs = index.knnQueryBatch(query_matrix, k = k_reco, num_threads = self.num_threads)
+        self.recos = index.knnQueryBatch(augmented_user_embeddings, k = k_reco, num_threads = self.num_threads)
+    
+    def predict(self, user_id: int):
+        reco_user = self.recos[user_id][0]
         
-        return nbrs[user_id][0]
+        return self.dataset.item_id_map.convert_to_external(reco_user)
