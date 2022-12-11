@@ -1,9 +1,9 @@
+import json
 from abc import ABC
 from typing import List
 
 import joblib as jb
 import numpy as np
-import json
 import pandas as pd
 
 
@@ -110,8 +110,6 @@ class Knn_20(BaseModel):
         self.reco = list_top_10
         self.model = jb.load("models/model_20.clf")
         self.no_stupid_model = NoStupidTop()
-
-
 
     def predict(self, user_id: int, k: int) -> List[int]:
         predicted = self.model.predict(test=user_id, N_recs=k)
