@@ -118,7 +118,6 @@ async def get_reco(
         k_recs = request.app.state.k_recs
         model = models[model_name]
         reco = model.predict(user_id, k_recs)
-
         if len(reco) < k_recs:
             reco += no_stupid_top.predict(user_id=user_id,
                                           k=k_recs - len(reco)
