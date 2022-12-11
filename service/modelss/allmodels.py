@@ -122,4 +122,3 @@ class Knn_20(BaseModel):
                                                      k=k - len(reco))
 
         return reco
-
