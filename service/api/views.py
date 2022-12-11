@@ -18,7 +18,6 @@ from service.log import app_logger
 
 from ..modelss.allmodels import (
     Knn_20,
-    Knn_20_All,
     NoStupidTop,
     Random2Recommend,
     StupidTop,
@@ -41,7 +40,6 @@ stupid_top = StupidTop()
 no_stupid_top = NoStupidTop()
 base_userknn = jb.load("models/model.clf")
 knn_20 = Knn_20()
-knn_20top = Knn_20_All()
 
 models = {
     "random2_model": random2_model,
@@ -49,7 +47,6 @@ models = {
     "no_stupid_top": no_stupid_top,
     "base_userknn": base_userknn,
     "knn_20": knn_20,
-    "knn_20top": knn_20top,
 }
 
 

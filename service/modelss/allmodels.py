@@ -123,30 +123,3 @@ class Knn_20(BaseModel):
 
         return reco
 
-
-class Knn_20_All(BaseModel):
-    def __init__(self):
-        super().__init__()
-
-        self.model = jb.load("models/model_20_all.clf")
-        self.no_stupid_model = NoStupidTop()
-        self.reco_unique = []
-
-    def predict(self, user_id: int, k: int) -> List[int]:
-        predicted = self.model.predict(test=user_id, N_recs=k)
-        if len(predicted) == 0:
-            self.reco_unique = self.no_stupid_model.predict(user_id=user_id,
-                                                            k=k)
-        else:
-            reco = list(predicted["item_id"].values)
-            if len(reco) < k:
-                reco += self.no_stupid_model.predict(user_id=user_id,
-                                                     k=k + 15)
-            for el in reco:
-                if el not in self.reco_unique:
-                    self.reco_unique.append(el)
-
-                if len(self.reco_unique) == 10:
-                    break
-
-        return self.reco_unique
