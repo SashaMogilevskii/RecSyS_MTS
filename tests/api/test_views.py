@@ -56,7 +56,7 @@ def test_get_reco_with_wrong_cred(
     client: TestClient,
 ) -> None:
     user_id = 123
-    model_name = 'model_1'
+    model_name = "model_1"
     path = GET_RECO_PATH.format(model_name=model_name, user_id=user_id)
     wrong_header = {"API_KEY": "12312331231"}
     with client:

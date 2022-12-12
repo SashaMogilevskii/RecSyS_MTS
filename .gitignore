@@ -68,3 +68,5 @@ venv.bak/
 
 
 /cloudflared.exe
+/models/model_20.clf
+/models/model_20_all.clf
