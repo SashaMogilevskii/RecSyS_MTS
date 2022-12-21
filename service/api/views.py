@@ -21,6 +21,7 @@ from ..modelss.allmodels import (
     NoStupidTop,
     Random2Recommend,
     StupidTop,
+    model_LightFM,
 )
 
 sys.path.insert(1, "service/modelss/")
@@ -40,6 +41,7 @@ stupid_top = StupidTop()
 no_stupid_top = NoStupidTop()
 base_userknn = jb.load("models/model.clf")
 knn_20 = Knn_20()
+model_LightFM = model_LightFM()
 
 models = {
     "random2_model": random2_model,
@@ -47,6 +49,7 @@ models = {
     "no_stupid_top": no_stupid_top,
     "base_userknn": base_userknn,
     "knn_20": knn_20,
+    "lightfm": model_LightFM,
 }
 
 
@@ -115,6 +118,7 @@ async def get_reco(
         k_recs = request.app.state.k_recs
         model = models[model_name]
         reco = model.predict(user_id, k_recs)
+        print("our recooo", reco)
         if len(reco) < k_recs:
             reco += no_stupid_top.predict(user_id=user_id,
                                           k=k_recs - len(reco)

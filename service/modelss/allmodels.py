@@ -122,3 +122,39 @@ class Knn_20(BaseModel):
                                                      k=k - len(reco))
 
         return reco
+
+
+class model_LightFM(BaseModel):
+    def __init__(self):
+        with open('./json_files/reco.json', 'r') as f:
+            json_dict = json.load(f)
+            list_top_items = json_dict['reco_140']
+            list_top_10 = json_dict['reco_top10']
+        self.list_top_items = np.array(list_top_items)
+        self.reco = list_top_10
+        self.predict_for_user = pd.read_csv(
+            "service/data/reco_LightFM.csv",
+            converters={"item_id": lambda x: x.strip("[]").split(", ")},
+        )
+
+    def predict(self, user_id: int, k: int) -> List[int]:
+        """
+        Return recommendation for user top with filter (notebook HW3_1)
+        This model delete items, which user used.
+        :param user_id: unique user_id
+        :param k: amount recommendation
+        :return: list recommendation
+        """
+        check_user = np.any(self.predict_for_user.user_id == user_id)
+
+        # Check users in data from LightFm predicted
+        if check_user:
+            # If True -> return list
+            reco = list(self.predict_for_user[
+                self.predict_for_user.user_id == user_id
+                                ]['item_id'].values[0])
+
+            print(reco, type(reco), 'user naiden')
+        else:
+            reco = self.reco
+        return reco
